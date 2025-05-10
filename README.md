@@ -3,6 +3,8 @@
 A user-friendly desktop application for patching and playing primarily Pokemon GBA ROM hacks.
 Supports ips, bps and ups patches.
 
+To run, simply install the .zip from the latest releases tab, extract and run the RomHackLauncher.exe
+
 ## Features
 
 *   **Browse Available Hacks:** Fetches a list of available ROM hacks from a configurable server.
