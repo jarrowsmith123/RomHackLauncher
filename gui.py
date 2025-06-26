@@ -2,12 +2,12 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 from PIL import Image, ImageTk
-from config_manager import app_config, save_config, load_config
+from app import RomLauncherService
 from populate_roms import populate_available_hacks_list, populate_installed_hacks_list
 
 # This is basically the main function, idk if I should call it that or not
 
-load_config()
+app = RomLauncherService()
 
 # --- Configuration ---
 # Most of this GUI code is made with help from https://github.com/ParthJadhav/Tkinter-Designer.git
@@ -76,7 +76,7 @@ header_button_frame.pack(side="right", padx=10)
 
 
 # Function that allows scrolling menus
-# Black magic do not touch
+# TODO this is broken lol
 def create_scrollable_area(parent, container_style_name, canvas_bg_color, scrollable_frame_style_name=None):
     if scrollable_frame_style_name is None:
         scrollable_frame_style_name = container_style_name 
@@ -130,7 +130,7 @@ left_list_container.grid(row=2, column=0, sticky="nsew", padx=10, pady=(0, 10))
 
 # --- Right Content Area ---
 # This will contain the hacks that the user has installed
-# TODO add search like above
+# TODO add search
 # TODO add a filter to filter hacks by their base ROM
 right_search_frame = ttk.Frame(right_frame, style="Content.TFrame")
 right_search_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10,5))
@@ -192,19 +192,19 @@ def open_settings():
 
     ttk.Label(main_settings_frame, text="Emulator Path:").grid(row=0, column=0, sticky="w", pady=2)
     emu_path_entry = ttk.Entry(main_settings_frame, width=60)
-    emu_path_entry.insert(0, app_config.get("emulator_path", ""))
+    emu_path_entry.insert(0, app.config.get_setting("emulator_path", ""))
     emu_path_entry.grid(row=0, column=1, sticky="ew", pady=2, padx=5)
     ttk.Button(main_settings_frame, text="Browse...", command=lambda: browse_file(emu_path_entry, "Select Emulator", [("Executable files", "*.exe"), ("All files", "*.*")])).grid(row=0, column=2, pady=2)
 
     ttk.Label(main_settings_frame, text="Patched ROMs Directory:").grid(row=1, column=0, sticky="w", pady=2)
     patched_dir_entry = ttk.Entry(main_settings_frame, width=60)
-    patched_dir_entry.insert(0, app_config.get("patched_roms_dir", ""))
+    patched_dir_entry.insert(0, app.config.get_setting("patched_roms_dir", ""))
     patched_dir_entry.grid(row=1, column=1, sticky="ew", pady=2, padx=5)
     ttk.Button(main_settings_frame, text="Browse...", command=lambda: browse_directory(patched_dir_entry, "Select Patched ROMs Directory")).grid(row=1, column=2, pady=2)
     
     ttk.Label(main_settings_frame, text="Box Art Directory:").grid(row=2, column=0, sticky="w", pady=2)
     box_art_dir_entry = ttk.Entry(main_settings_frame, width=60)
-    box_art_dir_entry.insert(0, app_config.get("box_art_dir", "box_art"))
+    box_art_dir_entry.insert(0, app.config.get_setting("box_art_dir", "box_art"))
     box_art_dir_entry.grid(row=2, column=1, sticky="ew", pady=2, padx=5)
     ttk.Button(main_settings_frame, text="Browse...", command=lambda: browse_directory(box_art_dir_entry, "Select Box Art Directory")).grid(row=2, column=2, pady=2)
 
@@ -213,11 +213,9 @@ def open_settings():
     base_rom_frame.grid_columnconfigure(1, weight=1)
     base_rom_entries = {}
 
-
-
     row_num = 0
     # Populate the settings menu with each base ROM in config and allows user to select ROM path
-    for rom_id, rom_path in app_config.get("base_roms", {}).items(): 
+    for rom_id, rom_path in app.config.get_setting("base_roms", {}).items(): 
         ttk.Label(base_rom_frame, text=f"{rom_id.replace('_', ' ').title()}:").grid(row=row_num, column=0, sticky="w", pady=2)
         entry = ttk.Entry(base_rom_frame, width=50)
         entry.insert(0, rom_path)
@@ -230,20 +228,19 @@ def open_settings():
     # Saves all the paths to the config,JSON
     def save_settings_action():
 
-        app_config["emulator_path"] = emu_path_entry.get()
-        app_config["patched_roms_dir"] = patched_dir_entry.get()
-        app_config["box_art_dir"] = box_art_dir_entry.get()
-        # Loops through all base ROMS
-        for rom_id, entry_widget in base_rom_entries.items():
-            app_config["base_roms"][rom_id] = entry_widget.get()
+        # Get values from Tkinter entry widgets
+        new_config = app.config.config_data.copy() # Start with current config
+        new_config["emulator_path"] = emu_path_entry.get()
+        new_config["patched_roms_dir"] = patched_dir_entry.get()
+        new_config["box_art_dir"] = box_art_dir_entry.get()
+        new_config["base_roms"] = {rom_id: var.get() for rom_id, var in base_rom_entries.items()}
+        result = app.update_settings(new_config)
         
-        save_config(app_config)
-        messagebox.showinfo("Settings", "Settings saved!", parent=settings_window_ref)
+        messagebox.showinfo("Settings", result['message'], parent=settings_window_ref)
         settings_window_ref.destroy()
         
         # Repopulate lists as paths might have changed
-        populate_installed_hacks_list(right_scrollable_frame, window, app_config, refresh_lists)
-        populate_available_hacks_list(left_scrollable_frame, window, app_config, refresh_lists)
+        refresh_lists()
 
     save_button = ttk.Button(main_settings_frame, text="Save Settings", command=save_settings_action)
     save_button.grid(row=4, column=0, columnspan=3, pady=20)
@@ -267,13 +264,13 @@ def refresh_lists():
     # This is a hacky little way to pass the refresh into the populate roms to stop circular dependency
     # Im not used to this issue so I'm not sure if it is the best way to handle it
     print("Refreshing lists")
-    populate_installed_hacks_list(right_scrollable_frame, window, app_config, refresh_lists)
-    populate_available_hacks_list(left_scrollable_frame, window, app_config, refresh_lists)
+
+    populate_installed_hacks_list(right_scrollable_frame, window, app, refresh_lists)
+    populate_available_hacks_list(left_scrollable_frame, window, app, refresh_lists)
 
 
 # Initial population
-populate_installed_hacks_list(right_scrollable_frame, window, app_config, refresh_lists)
-populate_available_hacks_list(left_scrollable_frame, window, app_config, refresh_lists)
+refresh_lists()
 
 # --- Start Main Loop ---
 window.mainloop()
