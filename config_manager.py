@@ -81,7 +81,7 @@ class Config:
         # Saves config to the JSON file
 
         if new_config:
-            self.config_data = new_config
+            self.config_data.update(new_config)
         # Ensure all dirs exists
         for key in ["patched_roms_dir", "patch_dir", "box_art_dir"]:
             dir_path = self.config_data.get(key)

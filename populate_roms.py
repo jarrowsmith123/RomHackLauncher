@@ -3,14 +3,14 @@ from tkinter import ttk, messagebox
 import tkinter as tk
 from PIL import Image, ImageTk
 
-# TODO this will be moved into gui.py
 
-def create_installed_list_item(parent_frame, item_data, window, app, list_refresh_callback):
-    """Creates a GUI item for the 'Installed Hacks' list on the right."""
-    title = item_data.get('title', 'Unknown Title')
-    body = item_data.get('body', '')
-    image_path_str = item_data.get('img') 
-    rom_path = item_data.get('path')
+def create_installed_list_item(parent_frame, rom, window, app, list_refresh_callback):
+    # Creates a GUI item for the Installed Hacks list on the right
+    title = rom.name
+    body = rom.description
+    box_art_dir = Path(app.config.get_setting("box_art_dir"))
+    image_path_str = box_art_dir / Path(rom.box_art_url).name 
+    rom_path = rom.patched_rom_path
 
     item_frame = ttk.Frame(parent_frame, padding=10, style="Content.TFrame")
     item_frame.pack(pady=5, padx=5, fill="x")
@@ -54,13 +54,13 @@ def create_installed_list_item(parent_frame, item_data, window, app, list_refres
     button_frame.grid(row=2, column=0, sticky="w")
 
     play_button = ttk.Button(button_frame, text="Play", style="ContentButton.TButton",
-                             command=lambda p=rom_path: app.play_rom(p))
+                             command=lambda r_id=rom.id: app.play_rom(r_id))
     play_button.pack(side="left", padx=(0, 5))
 
     delete_button = ttk.Button(button_frame, text="Delete", style="ContentButton.TButton",
-                               command=lambda t=title, p=rom_path: (
-                                   messagebox.askyesno("Confirm Delete", f"Are you sure you want to permanently delete '{t}'?\n({p})", icon='warning', parent=window) and \
-                                   app.delete_rom(p) and \
+                               command=lambda t=title, r_id=rom.id: (
+                                   messagebox.askyesno("Confirm Delete", f"Are you sure you want to permanently delete '{t}'?\n({r_id})", icon='warning', parent=window) and \
+                                   app.delete_rom(r_id) and \
                                    list_refresh_callback()
                                ))
     delete_button.pack(side="left")
@@ -83,8 +83,8 @@ def populate_installed_hacks_list(right_scrollable_frame, window, app, list_refr
     if not installed_hacks:
         ttk.Label(right_scrollable_frame, text="No ROM hacks installed yet.", style="ContentBody.TLabel").pack(pady=20)
     else:
-        for item_data in installed_hacks:
-            create_installed_list_item(right_scrollable_frame, item_data, window, app, list_refresh_callback)
+        for rom in installed_hacks:
+            create_installed_list_item(right_scrollable_frame, rom, window, app, list_refresh_callback)
 
 
 def populate_available_hacks_list(left_scrollable_frame, window, app, list_refresh_callback):
@@ -94,17 +94,28 @@ def populate_available_hacks_list(left_scrollable_frame, window, app, list_refre
     available_hacks = app.get_available_hacks()
 
     if not available_hacks:
-        ttk.Label(left_scrollable_frame, text="No new ROM hacks available, or failed to fetch from server.", wraplength=300, style="ContentBody.TLabel").pack(pady=20, padx=10)
+        ttk.Label(left_scrollable_frame, text="No new ROM hacks available.", wraplength=300, style="ContentBody.TLabel").pack(pady=20, padx=10)
         return
     
-    for hack_details in available_hacks:
+    for hack in available_hacks:
         item_frame = ttk.Frame(left_scrollable_frame, style="Sidebar.TFrame")
         item_frame.pack(fill="x", pady=2, padx=5)
         
-        hack_name = hack_details.get('name', 'Unknown Hack')
-        hack_id = hack_details.get('id')
+        hack_name = hack.name
+        hack_id = hack.id
+        base_rom = hack.base_rom_id
 
-        name_label = ttk.Label(item_frame, text=hack_name, style="ListButton.TButton", background="#F0F0F0")
+        if base_rom == 'emerald':
+            label_style = "Emerald.TLabel"
+        elif base_rom == 'firered':
+            label_style = "FireRed.TLabel"
+        else:
+            # Fallback for any undefined
+            label_style = "ListButton.TButton"
+
+        # Create the name label with style
+        name_label = ttk.Label(item_frame, text=hack_name, style=label_style)
+        
         name_label.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
         install_button = ttk.Button(item_frame, text="Install", style="ContentButton.TButton",

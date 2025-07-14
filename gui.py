@@ -5,25 +5,24 @@ from PIL import Image, ImageTk
 from app import RomLauncherService
 from populate_roms import populate_available_hacks_list, populate_installed_hacks_list
 
-# This is basically the main function, idk if I should call it that or not
+# This is the point of entry for now
 
 app = RomLauncherService()
 
 # --- Configuration ---
 # Most of this GUI code is made with help from https://github.com/ParthJadhav/Tkinter-Designer.git
-# Try to NOT TOUCH IT because it likes to break - I vow to never use python for front end again lol
-# Buttons are at least easy as you can just use a lambda to add actions to the button to not reuse code
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / "assets"
 
+# TODO remove hard coded values
 # Background colours, can implement a themes to change these
 HEADER_BG = "#8C1919"
 SIDEBAR_BG = "#F0F0F0"
 CONTENT_BG = "#FFFFFF"
 HEADER_FG = "#FFFFFF"
 BODY_FG = "#555555"
-
+ 
 # This just prevents code reuse getting full path of gui assets
 def relative_to_assets(path: str) -> Path:
     full_path = ASSETS_PATH / Path(path)
@@ -50,6 +49,8 @@ style.configure("ContentBody.TLabel", background=CONTENT_BG, foreground=BODY_FG,
 style.configure("ContentButton.TButton", font=("Inter", 10))
 style.configure("ListButton.TButton", anchor="w", font=("Inter", 12))
 
+style.configure("Emerald.TLabel", background="#2E8B57", foreground="white", font=("Inter SemiBold", 12), padding=(5, 3))
+style.configure("FireRed.TLabel", background="#C0392B", foreground="white", font=("Inter SemiBold", 12), padding=(5, 3))
 
 # --- Main Layout Frames ---
 window.grid_rowconfigure(1, weight=1)
@@ -229,12 +230,13 @@ def open_settings():
     def save_settings_action():
 
         # Get values from Tkinter entry widgets
-        new_config = app.config.config_data.copy() # Start with current config
-        new_config["emulator_path"] = emu_path_entry.get()
-        new_config["patched_roms_dir"] = patched_dir_entry.get()
-        new_config["box_art_dir"] = box_art_dir_entry.get()
-        new_config["base_roms"] = {rom_id: var.get() for rom_id, var in base_rom_entries.items()}
-        result = app.update_settings(new_config)
+        settings_to_update = {
+            "emulator_path": emu_path_entry.get(),
+            "patched_roms_dir": patched_dir_entry.get(),
+            "box_art_dir": box_art_dir_entry.get(),
+            "base_roms": {rom_id: var.get() for rom_id, var in base_rom_entries.items()}
+        }
+        result = app.update_settings(settings_to_update)
         
         messagebox.showinfo("Settings", result['message'], parent=settings_window_ref)
         settings_window_ref.destroy()
@@ -272,5 +274,5 @@ def refresh_lists():
 # Initial population
 refresh_lists()
 
-# --- Start Main Loop ---
+# Start Main Loop
 window.mainloop()
