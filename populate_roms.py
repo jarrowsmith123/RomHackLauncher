@@ -70,12 +70,10 @@ def clear_frame(frame):
     for widget in frame.winfo_children():
         widget.destroy()
 
-def populate_installed_hacks_list(right_scrollable_frame, window, app, list_refresh_callback):
-    clear_frame(right_scrollable_frame)
-    print("Populating installed ROMs list...")
-    
-    installed_hacks = app.get_installed_hacks()
+def populate_installed_hacks_list(right_scrollable_frame, window, app, list_refresh_callback, installed_hacks):
 
+    clear_frame(right_scrollable_frame)
+    
     if not app.config.get_setting("patched_roms_dir"):
         ttk.Label(right_scrollable_frame, text="Patched ROMs directory not configured in settings.", style="ContentBody.TLabel").pack(pady=20)
         return
@@ -87,11 +85,9 @@ def populate_installed_hacks_list(right_scrollable_frame, window, app, list_refr
             create_installed_list_item(right_scrollable_frame, rom, window, app, list_refresh_callback)
 
 
-def populate_available_hacks_list(left_scrollable_frame, window, app, list_refresh_callback):
-    clear_frame(left_scrollable_frame)
-    print("Populating available ROMs list...")
+def populate_available_hacks_list(left_scrollable_frame, window, app, list_refresh_callback, available_hacks):
 
-    available_hacks = app.get_available_hacks()
+    clear_frame(left_scrollable_frame)
 
     if not available_hacks:
         ttk.Label(left_scrollable_frame, text="No new ROM hacks available.", wraplength=300, style="ContentBody.TLabel").pack(pady=20, padx=10)

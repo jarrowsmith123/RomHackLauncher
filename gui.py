@@ -76,6 +76,20 @@ header_button_frame = ttk.Frame(header_frame, style="Header.TFrame")
 header_button_frame.pack(side="right", padx=10)
 
 
+def refresh_lists():
+    # This is a hacky little way to pass the refresh into the populate roms to stop circular dependency
+    # Im not used to this issue so I'm not sure if it is the best way to handle it
+    print("refreshing lists")
+    available_query = left_search_entry.get()
+    installed_query = right_search_entry.get()
+    available_hacks = app.get_available_hacks(search_query=available_query)
+    installed_hacks = app.get_installed_hacks(search_query=installed_query)
+
+
+    populate_installed_hacks_list(right_scrollable_frame, window, app, refresh_lists,installed_hacks)
+    populate_available_hacks_list(left_scrollable_frame, window, app, refresh_lists,available_hacks)
+
+
 # Function that allows scrolling menus
 # TODO this is broken lol
 def create_scrollable_area(parent, container_style_name, canvas_bg_color, scrollable_frame_style_name=None):
@@ -118,7 +132,8 @@ left_search_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10,5))
 left_search_frame.grid_columnconfigure(0, weight=1)
 left_search_entry = ttk.Entry(left_search_frame)
 left_search_entry.grid(row=0, column=0, sticky="ew", padx=(0, 5))
-search_button_left = ttk.Button(left_search_frame, text="Search", command=lambda: None) # Search function here
+left_search_entry.bind("<Return>", lambda event: refresh_lists())
+search_button_left = ttk.Button(left_search_frame, text="Search", command=refresh_lists)
 search_button_left.grid(row=0, column=1, sticky="e")
 
 left_list_label = ttk.Label(left_frame, text="Available Hacks", font=("Inter SemiBold", 14), background=SIDEBAR_BG)
@@ -138,8 +153,9 @@ right_search_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10,5))
 right_search_frame.grid_columnconfigure(0, weight=1)
 right_search_entry = ttk.Entry(right_search_frame)
 right_search_entry.grid(row=0, column=0, sticky="ew", padx=(0, 5))
-filter_button = ttk.Button(right_search_frame, text="Search", style="ContentButton.TButton", command=lambda: None) # Placeholder action
-filter_button.grid(row=0, column=1, padx=5)
+right_search_entry.bind("<Return>", lambda event: refresh_lists())
+right_search_button = ttk.Button(right_search_frame, text="Search", style="ContentButton.TButton", command=refresh_lists)
+right_search_button.grid(row=0, column=1, padx=5)
 action_button = ttk.Button(right_search_frame, text="Filter", style="ContentButton.TButton", command=lambda: None) # Placeholder action
 action_button.grid(row=0, column=2)
 
@@ -262,13 +278,7 @@ settings_button_main.image = settings_icon
 settings_button_main.pack(side="right", padx=5)
 
 
-def refresh_lists():
-    # This is a hacky little way to pass the refresh into the populate roms to stop circular dependency
-    # Im not used to this issue so I'm not sure if it is the best way to handle it
-    print("Refreshing lists")
 
-    populate_installed_hacks_list(right_scrollable_frame, window, app, refresh_lists)
-    populate_available_hacks_list(left_scrollable_frame, window, app, refresh_lists)
 
 
 # Initial population

@@ -26,8 +26,6 @@ class RomLauncherService:
             # This is a simple factory based on a new 'system' key in hacks.json
                 if hack_info.get('system') == 'gba':
                     self._roms[hack_id] = GBARom(hack_info, self.config)
-                elif hack_info.get('system') == 'nds':
-                    self._roms[hack_id] = NDSRom(hack_info, self.config)
 
 
     def update_settings(self, new_config_data):
@@ -53,16 +51,29 @@ class RomLauncherService:
                 print(f"Error reading patched ROMs directory: {e}")
         return installed_files
 
-    def get_installed_hacks(self):
+    def get_installed_hacks(self, search_query=None,system=None,base_rom=None):
         # Returns list of all installed ROMs with their information from the server
-        print(self._roms)
-        return [rom for rom in self._roms.values() if rom.is_installed]
+        installed_hacks = [rom for rom in self._roms.values() if rom.is_installed]
+        return self.filter_hacks(installed_hacks, search_query, system, base_rom)
     
-    def get_available_hacks(self):
+    def get_available_hacks(self, search_query=None,system=None,base_rom=None):
         # Returns the ROMs from the server not yet installed
-        print([rom for rom in self._roms.values() if not rom.is_installed])
-        return [rom for rom in self._roms.values() if not rom.is_installed]
+        available_hacks = [rom for rom in self._roms.values() if not rom.is_installed]
+        return self.filter_hacks(available_hacks, search_query, system, base_rom)
 
+
+    def filter_hacks(self, rom_list, search_query=None, system=None, base_rom=None):
+
+        results = rom_list
+        if search_query:
+            results = [rom for rom in results if search_query.lower() in rom.name.lower()]
+        if base_rom:
+            results = [rom for rom in results if rom.base_rom_id == base_rom]
+        if system:
+            results = [rom for rom in results if rom.system == system]
+
+        return results
+    
     def install_hack(self, hack_id):
         # Installs the patch and box art, and applies the patch
         # I will probably move some of the action logic back into this as its not so readable atm

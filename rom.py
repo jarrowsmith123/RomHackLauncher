@@ -20,6 +20,7 @@ class ROM(abc.ABC):
         self.box_art_url = hack_info.get('box_art_url')
         self.patch_file_url = hack_info.get('patch_file')
         self.author = hack_info.get('author')
+        self.system = hack_info.get('system')
 
     @property
     def patched_rom_path(self) -> Path:
