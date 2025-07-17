@@ -5,8 +5,10 @@ from config_manager import Config
 from fetch import fetch_hack_list_from_server, download_image_from_server
 from rom import GBARom
 
+# Acts as API for the GUI
+
 class RomLauncherService:
-    # Acts as API for the GUI
+    
     def __init__(self):
         # Initialize dependencies
         self.config = Config()
@@ -23,7 +25,9 @@ class RomLauncherService:
         hacks = fetch_hack_list_from_server(self.config) 
         if hacks:
             for hack_id, hack_info in hacks.items():
-            # This is a simple factory based on a new 'system' key in hacks.json
+                box_art_url = hack_info.get('box_art_url')
+                if box_art_url:
+                    download_image_from_server(box_art_url, self.config)
                 if hack_info.get('system') == 'gba':
                     self._roms[hack_id] = GBARom(hack_info, self.config)
 
