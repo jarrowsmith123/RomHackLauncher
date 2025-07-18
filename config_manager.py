@@ -1,11 +1,8 @@
 import json
 import os
 from pathlib import Path
-# This is to save all the stuff to congig.JSON
-# Main to-do is to move away from the dict approach I started with
-# ConfigManager should probably just be Config and have an attribute for each value
-# Same with ROMs - why didnt i just start with OOP i hate scope creep
 
+# Manages loading and saving application settings from config.json
 class Config:
 
     CONFIG_FILE = "config.json"
@@ -28,7 +25,7 @@ class Config:
         self.load_config()
 
     def load_config(self):
-
+        # Creates a default config file if one doesn't exist
         if not os.path.exists(self.config_file):
             print(f"Config file not found. Creating default config at {self.config_file}")
             self.config_data = self.default_config.copy()
@@ -37,52 +34,42 @@ class Config:
 
         try:
             with open(self.config_file, 'r') as f:
-                # Load data directly into the instance's config_data attribute
                 self.config_data = json.load(f)
 
-            # Validate the loaded config against default
+            # Validate the loaded config, adding any missing default keys
             updated = False
             for key, value in self.default_config.items():
                 if key not in self.config_data:
                     self.config_data[key] = value
                     updated = True
-                # Ensure nested dicts like base_roms exist
+                # Ensure nested dicts like base_roms are correctly typed
                 elif key == "base_roms" and not isinstance(self.config_data.get(key), dict):
                     self.config_data[key] = value
                     updated = True
             
             if updated:
                 print("Config file updated with missing default keys.")
-                # Save_config will use the updated self.config_data
                 self.save_config() 
             
         except (json.JSONDecodeError, IOError) as e:
             print(f"Error loading config file '{self.config_file}': {e}. Using default config.")
             self.config_data = self.default_config.copy()
-            self.save_config() # Attempt to save a fresh default config
+            self.save_config()
 
     def get_setting(self, key, default=None):
-        # Get method for a particular value in the config
-        # This nested get allows accessing keys like "base_roms"
-        keys = key.split('.')
-        value = self.config_data
-        for k in keys:
-            if isinstance(value, dict):
-                value = value.get(k)
-            else:
-                return default
-        return value if value is not None else default
+        # Retrieves a setting value by its key
+        return self.config_data.get(key, default)
     
     def set_setting(self, key, value):
-        # Set method for particular config value
+        # Updates a setting value in memory
         self.config_data[key] = value
 
-    def save_config(self, new_config = None):
-        # Saves config to the JSON file
-
+    def save_config(self, new_config=None):
+        # Saves the current configuration to the JSON file
         if new_config:
             self.config_data.update(new_config)
-        # Ensure all dirs exists
+            
+        # Ensure all required directories exist
         for key in ["patched_roms_dir", "patch_dir", "box_art_dir"]:
             dir_path = self.config_data.get(key)
             if dir_path:
@@ -94,4 +81,3 @@ class Config:
             print(f"Configuration saved to {self.config_file}")
         except IOError as e:
             print(f"Error saving config file {self.config_file}: {e}")
-
