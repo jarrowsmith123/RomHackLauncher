@@ -11,6 +11,8 @@ from fetch import download_image_from_server
 # --- Color Constants ---
 EMERALD_GREEN = "#2E8B57"
 FIRE_RED = "#C0392B"
+SOUL_SILVER = "#8AC6D4"
+
 HYPERLINK_BLUE = "#00529B"
 BODY_TEXT_COLOR = "#555555"
 BORDER_PURPLE = "#55526f" 
@@ -43,7 +45,8 @@ def create_base_list_item_widgets(parent_frame, rom, fonts):
     info_frame.pack(fill="x", pady=(0, 10))
 
     customtkinter.CTkLabel(info_frame, text="Base:", font=fonts['bold_body']).pack(side="left")
-    base_color = FIRE_RED if rom.base_rom_id == 'firered' else EMERALD_GREEN if rom.base_rom_id == 'emerald' else BODY_TEXT_COLOR
+    # TODO THIS!!!1!!!!1
+    base_color = FIRE_RED if rom.base_rom_id == 'firered' else EMERALD_GREEN if rom.base_rom_id == 'emerald' else SOUL_SILVER
     customtkinter.CTkLabel(info_frame, text=rom.base_rom_id.title(), text_color=base_color, font=fonts['body']).pack(side="left", padx=(4,0))
 
     customtkinter.CTkLabel(info_frame, text="Author:", font=fonts['bold_body']).pack(side="left", padx=(20, 0))
@@ -72,7 +75,7 @@ def create_installed_list_item(parent_frame, rom, window, app, list_refresh_call
         delete_button.pack(side="left")
 
 def create_available_list_item(parent_frame, rom, window, app, list_refresh_callback, fonts, image_cache, install_handler):
-    
+
     button_frame = create_base_list_item_widgets(parent_frame, rom, fonts)
     if image_cache:
         install_button = customtkinter.CTkButton(button_frame, image=image_cache['install_normal_img'], text="", fg_color="transparent", hover=False, command=lambda r_id=rom.id, r_name=rom.name: install_handler(r_id, r_name))

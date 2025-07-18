@@ -1,11 +1,14 @@
 {
-    "server_url": "https://jarrowsmith123.github.io/RomHack-Launcher-Assets/",
-    "emulator_path": "C:/Users/jarro/Downloads/mGBA-0.10.5-win64/mGBA-0.10.5-win64/mGBA.exe",
+    "server_url": "",
+    "gba_emulator_path": "",
+    "ds_emulator_path": "",
     "patched_roms_dir": "patched_roms",
     "box_art_dir": "box_art",
     "base_roms": {
-        "firered": "C:/Users/jarro/Downloads/1636 - Pokemon Fire Red (U)(Squirrels)/1636 - Pokemon Fire Red (U)(Squirrels).gba",
-        "emerald": "C:/Users/jarro/Downloads/1986 - Pokemon Emerald (U)(TrashMan)/1986 - Pokemon Emerald (U)(TrashMan).gba"
+        "firered": "",
+        "emerald": "",
+        "soulsilver": ""
     },
-    "patch_dir": "downloaded_patches"
+    "patch_dir": "downloaded_patches",
+    "emulator_path": ""
 }

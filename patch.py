@@ -10,6 +10,9 @@ def apply_patch(patch_type, patcher_path, patch_file, input_file, output_file):
     elif patch_type == "ups":
         # UPS Patcher uses this command structure
         cmd = [patcher_path, "apply", "--base", input_file, "--patch", patch_file, "--output", output_file]
+    elif patch_type == "patch":
+        # Correct command structure for applying an xdelta patch
+        cmd = [patcher_path, "patch", patch_file, input_file, output_file]
     else:
         print(f"Unsupported patch type: {patch_type}")
         return False

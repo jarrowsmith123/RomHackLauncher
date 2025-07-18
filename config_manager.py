@@ -7,7 +7,8 @@ class Config:
 
     CONFIG_FILE = "config.json"
     DEFAULT_CONFIG = {
-        "emulator_path": "",
+        "gba_emulator_path": "",
+        "ds_emulator_path": "",
         "server_url": "https://jarrowsmith123.github.io/RomHack-Launcher-Assets/",
         "patch_dir": "downloaded_patches",
         "box_art_dir": "box_art",
@@ -15,6 +16,7 @@ class Config:
         "base_roms": {
             "firered": "",
             "emerald": "",
+            "soulsilver": ""
         }
     }
 

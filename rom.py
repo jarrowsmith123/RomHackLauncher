@@ -27,7 +27,10 @@ class ROM(abc.ABC):
         # Returns the expected path of the final, patched ROM file.
         patched_dir = Path(self.config.get_setting("patched_roms_dir"))
         # The file extension may need to be dynamic for other systems in the future.
-        return patched_dir / f"{self.id}.gba" 
+        if self.system == "gba":
+            return patched_dir / f"{self.id}.gba" 
+        elif self.system == "nds":
+            return patched_dir / f"{self.id}.nds" 
 
     @property
     def is_installed(self) -> bool:
@@ -100,7 +103,64 @@ class GBARom(ROM):
 
     def launch(self):
         # Launches the installed GBA ROM using the configured emulator.
-        emulator_path = self.config.get_setting("emulator_path")
+        emulator_path = self.config.get_setting("gba_emulator_path")
+        if not emulator_path or not os.path.exists(emulator_path):
+            return {'success': False, 'message': "Emulator path is not set or is invalid."}
+        
+        if not self.is_installed:
+            return {'success': False, 'message': f"ROM for {self.name} is not installed."}
+
+        try:
+            launch_mgba_with_rom(emulator_path, str(self.patched_rom_path))
+            return {'success': True, 'message': f"Launching {self.name}..."}
+        except Exception as e:
+            return {'success': False, 'message': f"Error launching ROM: {e}"}
+        
+
+class NDSRom(ROM):
+    def patch(self):
+        # Handles the patching process for a GBA ROM.
+        base_roms = self.config.get_setting("base_roms", {})
+        base_rom_path_str = base_roms.get(self.base_rom_id)
+        if not base_rom_path_str or not Path(base_rom_path_str).exists():
+            return {'success': False, 'message': f"Base ROM '{self.base_rom_id}' not found or configured."}
+
+        # Download the patch file from the server.
+        patch_path_str = download_patch_from_server(self.patch_file_url, self.config)
+        if not patch_path_str:
+            return {'success': False, 'message': 'Failed to download patch file.'}
+        
+        # Determine patch type and required patcher executable from the file extension.
+        patch_path = Path(patch_path_str)
+        patch_type = patch_path.suffix[1:].lower()
+        
+        patcher_path = "xdelta.exe"
+        
+        success = apply_patch(
+            patch_type,
+            patcher_path,
+            str(patch_path),
+            base_rom_path_str,
+            str(self.patched_rom_path)
+        )
+        
+        # Clean up by removing the downloaded patch file after use.
+        try:
+            patch_path.unlink()
+        except OSError as e:
+            print(f"Warning: Could not remove patch file {patch_path}: {e}")
+
+        if success:
+            return {'success': True, 'message': f"'{self.name}' installed successfully!"}
+        else:
+            # If patching failed, clean up the invalid output file that may have been created.
+            if self.patched_rom_path.exists():
+                self.patched_rom_path.unlink()
+            return {'success': False, 'message': f"Patching for '{self.name}' failed."}
+
+    def launch(self):
+        # Launches the installed GBA ROM using the configured emulator.
+        emulator_path = "melonDS.exe"
         if not emulator_path or not os.path.exists(emulator_path):
             return {'success': False, 'message': "Emulator path is not set or is invalid."}
         

@@ -3,7 +3,7 @@ from pathlib import Path
 from config_manager import Config
 
 from fetch import fetch_hack_list_from_server
-from rom import GBARom
+from rom import GBARom, NDSRom
 
 # Acts as API for the GUI
 
@@ -26,6 +26,8 @@ class RomLauncherService:
                 # For now, only GBA is supported. This can be expanded later
                 if hack_info.get('system') == 'gba':
                     self._roms[hack_id] = GBARom(hack_info, self.config)
+                elif hack_info.get('system') == 'nds':
+                    self._roms[hack_id] = NDSRom(hack_info, self.config)
 
     def update_settings(self, new_config_data):
         # Saves new settings to the config file and re-initializes data
