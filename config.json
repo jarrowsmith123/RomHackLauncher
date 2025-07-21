@@ -1,12 +1,12 @@
 {
-    "server_url": "",
-    "gba_emulator_path": "",
-    "ds_emulator_path": "",
+    "server_url": "https://jarrowsmith123.github.io/RomHack-Launcher-Assets/",
+    "gba_emulator_path": "mGBA.exe",
+    "ds_emulator_path": "melonDS.exe",
     "patched_roms_dir": "patched_roms",
     "box_art_dir": "box_art",
     "base_roms": {
         "firered": "",
-        "emerald": "",
+        "emerald": "C:/Users/jarro/Downloads/1986 - Pokemon Emerald (U)(TrashMan)/1986 - Pokemon Emerald (U)(TrashMan).gba",
         "soulsilver": ""
     },
     "patch_dir": "downloaded_patches",

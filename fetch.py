@@ -13,7 +13,7 @@ def fetch_hack_list_from_server(config):
         print("Error: Server URL not configured.")
         return None
 
-    list_url = server_url.rstrip('/') + '/hacks.json' 
+    list_url = server_url.rstrip('/') + "/hacks.json" 
 
     try:
         # Use the shared session object for the request
@@ -51,7 +51,7 @@ def download_patch_from_server(patch_url, config):
         # Use the shared session object for the request
         response = session.get(download_url, timeout=30) # Increased timeout for larger files
         response.raise_for_status()
-        with open(local_patch_path, 'wb') as f:
+        with open(local_patch_path, "wb") as f:
             f.write(response.content)
         print(f"Patch downloaded to: {local_patch_path}")
         return str(local_patch_path)
@@ -86,7 +86,7 @@ def download_image_from_server(image_url, config):
         # Use the shared session and stream the response for efficiency
         response = session.get(download_url, stream=True, timeout=15)
         response.raise_for_status()
-        with open(local_image_path, 'wb') as f:
+        with open(local_image_path, "wb") as f:
             shutil.copyfileobj(response.raw, f)
         # We don't print success here to avoid cluttering the console during bulk downloads
         return str(local_image_path)

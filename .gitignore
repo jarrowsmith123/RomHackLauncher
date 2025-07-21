@@ -180,3 +180,4 @@ cython_debug/
 .box_art/
 .downloaded_patches/
 .patched_roms/
+.customtkinter/
